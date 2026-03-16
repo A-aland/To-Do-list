@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aland — Task Operating System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <canvas id="particles"></canvas>
+
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-mark">A</span>
+        <span class="logo-text">ALAND</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-filter="all">
+          <span class="nav-icon">◈</span>
+          <span>All Tasks</span>
+          <span class="nav-badge" id="badge-all">0</span>
+        </button>
+        <button class="nav-item" data-filter="today">
+          <span class="nav-icon">◉</span>
+          <span>Today</span>
+          <span class="nav-badge" id="badge-today">0</span>
+        </button>
+        <button class="nav-item" data-filter="upcoming">
+          <span class="nav-icon">◎</span>
+          <span>Upcoming</span>
+          <span class="nav-badge" id="badge-upcoming">0</span>
+        </button>
+        <button class="nav-item" data-filter="completed">
+          <span class="nav-icon">◆</span>
+          <span>Completed</span>
+          <span class="nav-badge" id="badge-completed">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section-label">CATEGORIES</div>
+      <div class="category-list" id="categoryList"></div>
+      <button class="add-category-btn" id="addCategoryBtn">
+        <span>+</span> New Category
+      </button>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="stats-panel">
+        <div class="stat-item">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statDone">0</div>
+          <div class="stat-label">Done</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="statStreak">0</div>
+          <div class="stat-label">Streak</div>
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>Daily Progress</span>
+          <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top bar -->
+      <header class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        <div class="topbar-title">
+          <h1 id="viewTitle">All Tasks</h1>
+          <div class="topbar-date" id="topbarDate"></div>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="searchToggle" title="Search">⌕</button>
+          <button class="icon-btn" id="sortBtn" title="Sort">⇅</button>
+          <button class="icon-btn" id="themeBtn" title="Toggle Theme">◑</button>
+        </div>
+      </header>
+
+      <!-- Search bar -->
+      <div class="search-bar" id="searchBar">
+        <input type="text" placeholder="Search tasks, notes, categories..." id="searchInput" />
+        <span class="search-icon">⌕</span>
+      </div>
+
+      <!-- Sort options -->
+      <div class="sort-panel" id="sortPanel">
+        <button class="sort-opt active" data-sort="created">Newest</button>
+        <button class="sort-opt" data-sort="due">Due Date</button>
+        <button class="sort-opt" data-sort="priority">Priority</button>
+        <button class="sort-opt" data-sort="alpha">A–Z</button>
+      </div>
+
+      <!-- Add Task Input -->
+      <div class="add-task-zone">
+        <div class="add-task-main">
+          <input type="text" id="taskInput" placeholder="What needs to be done? Press Enter or click +" class="task-input-field" maxlength="200" />
+          <button class="add-task-btn" id="addTaskBtn">+</button>
+        </div>
+        <div class="add-task-meta" id="addTaskMeta">
+          <select id="taskPriority" class="meta-select">
+            <option value="low">⬡ Low</option>
+            <option value="medium" selected>◈ Medium</option>
+            <option value="high">⬢ High</option>
+            <option value="critical">⚡ Critical</option>
+          </select>
+          <select id="taskCategory" class="meta-select" id="taskCategorySelect">
+            <option value="">No Category</option>
+          </select>
+          <input type="date" id="taskDue" class="meta-input" title="Due Date" />
+          <input type="text" id="taskNote" class="meta-input note-input" placeholder="Add note..." maxlength="300" />
+        </div>
+      </div>
+
+      <!-- Task List -->
+      <div class="task-list" id="taskList">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">◈</div>
+          <div class="empty-title">No tasks yet</div>
+          <div class="empty-sub">Add a task above to get started</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Task Detail Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="taskModal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-header">
+        <div class="modal-priority-tag" id="modalPriorityTag"></div>
+        <input type="text" class="modal-title-input" id="modalTitle" />
+      </div>
+      <div class="modal-body">
+        <div class="modal-row">
+          <label>Priority</label>
+          <select id="modalPriority" class="meta-select">
+            <option value="low">⬡ Low</option>
+            <option value="medium">◈ Medium</option>
+            <option value="high">⬢ High</option>
+            <option value="critical">⚡ Critical</option>
+          </select>
+        </div>
+        <div class="modal-row">
+          <label>Category</label>
+          <select id="modalCategory" class="meta-select"></select>
+        </div>
+        <div class="modal-row">
+          <label>Due Date</label>
+          <input type="date" id="modalDue" class="meta-input" />
+        </div>
+        <div class="modal-row">
+          <label>Note</label>
+          <textarea id="modalNote" class="modal-textarea" placeholder="Add detailed notes..."></textarea>
+        </div>
+        <div class="modal-row">
+          <label>Subtasks</label>
+          <div class="subtask-zone">
+            <div class="subtask-list" id="subtaskList"></div>
+            <div class="subtask-add">
+              <input type="text" id="subtaskInput" placeholder="Add subtask..." />
+              <button id="addSubtaskBtn">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-row">
+          <label>Created</label>
+          <span class="modal-meta-val" id="modalCreated"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-danger" id="modalDelete">Delete Task</button>
+        <button class="btn-primary" id="modalSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Modal -->
+  <div class="modal-overlay" id="categoryModalOverlay">
+    <div class="modal small-modal" id="categoryModal">
+      <button class="modal-close" id="categoryModalClose">✕</button>
+      <h3 class="modal-heading">New Category</h3>
+      <input type="text" id="categoryNameInput" class="meta-input full-input" placeholder="Category name..." maxlength="30" />
+      <div class="color-picker" id="colorPicker"></div>
+      <button class="btn-primary full-btn" id="saveCategoryBtn">Create Category</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
